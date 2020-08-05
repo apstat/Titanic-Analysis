@@ -1,8 +1,3 @@
-##### Objective #####
-# Q1. How does features depend upon chance of Survival?
-# Q2. Predicting the Survival using preferred features in Q1.
-# Q3. Predicting the Survival in the entire ship.
-
 library(titanic)
 library(dplyr)
 library(caret)
