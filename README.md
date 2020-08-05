@@ -1,2 +1,2 @@
 # Titanic-Analysis
-Machine Learning Analysis with the famous Titanic Dataset.
+This analysis attempts to predict the chance of survival of the Titanic Passengers. It was noted that more than 1,500 of the estimated 2,224 passengers and crew died in the accident, making this one of the largest maritime disasters ever outside of war. The ship contained a variety of passengers of all ages and both genders, from luxury travelers in first-class to immigrants in the lower classes. Also, not all the passengers had an equally likely chance to survive from the ship wreck.
