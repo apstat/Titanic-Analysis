@@ -1,3 +1,8 @@
+##### Objective #####
+# Q1. How does features depend upon chance of Survival?
+# Q2. Predicting the Survival using preferred features in Q1.
+# Q3. Predicting the Survival in the entire ship.
+
 library(titanic)
 library(dplyr)
 library(caret)
@@ -8,15 +13,17 @@ library(randomForest)
 library(tibble)
 
 # Load train and test data
-head(titanic_train)
-head(titanic_test)
+dat1 <- titanic_train
+dat2 <- titanic_test
+head(dat1)
 
+data <- bind_rows(dat1,dat2)
 # Finding missing values
 colSums(is.na(data))
 colSums(data == "")
 
 # Cleaning & Processing the data
-data_clean <- bind_rows(titanic_train,titanic_test) %>% 
+data_clean <- data %>% 
   mutate(Survived = factor(Survived),
          Pclass = factor(Pclass),
          Age = ifelse(is.na(Age),median(Age,na.rm = TRUE),Age),
@@ -75,37 +82,50 @@ mean(pred1 == test$Survived)
 # (2) Using all the above features together to predict on the test set
 model2 <- train(Survived~.,method = 'glm',data = train)
 pred2 <- predict(model2,test)
-mean(pred2 == test$Survived)
+m2 <- mean(pred2 == test$Survived)
+m2
 # So, the mean of correct predictions has increased a little to about 80%.
 # Creating Confusion Matrix for model2
-confusionMatrix(factor(pred2),test$Survived)
-# The Balance Accuracy (or, F1 score) is 78% which is quite good.
+cm2 <- confusionMatrix(factor(pred2),test$Survived)$byClass['F1']
+cm2
 
 #######_:_:_:_:_: Decision Tree :_:_:_:_:_#######
 # Training a Decision Tree Model using `rpart`
 model3 <- rpart(Survived~.,data = train,method = 'class')
 pred3 <- predict(model3,test,type = 'class')
-mean(pred3 == test$Survived)
+m3 <- mean(pred3 == test$Survived)
+m3
 # The mean of correct predictions is about 79%.
 rpart.plot(model3)
 # Creating Confusion Matrix for model3
-confusionMatrix(factor(pred3),test$Survived)
-# The Balance Accuracy (or, F1 score) is about 77% which is quite good.
+cm3 <- confusionMatrix(factor(pred3),test$Survived)
+cm3
 
 #######_:_:_:_:_: Random Forest Model :_:_:_:_#######
 model4 <- randomForest(Survived~.,data = train)
 pred4 <- predict(model4,test)
-mean(pred4 == test$Survived)
+m4 <- mean(pred4 == test$Survived)
+m4
 # The mean of correct predictions is about 81%.
 varImp(model4) # Importance of Variables
 # Creating Confusion Matrix for model4
-confusionMatrix(factor(pred4),test$Survived)
-# The Balance Accuracy (or, F1 score) is about 79% which is quite good.
+cm4 <- confusionMatrix(factor(pred4),test$Survived)
+cm4
 
+val <- c(m2,m3,m4,cm2,cm3,cm4)
+matrix(val,ncol = 2,nrow = 3,byrow = FALSE,
+       dimnames = list(c("Logistic Regression","Decision Tree","Random Forest"),
+                       c("Mean Predictions","F1 Score")))
 ## The mean of correct predictions is obtained highest for Random Forest Model about 81%.
 # Lets predict `titanic_test` using model4
 test_set <- data_clean[length(train_set)+1:1309,]
 Survived_pred <- predict(model4,test_set)[1:418]
 # Now, we will form a data frame wrt `titanic_test`
-result <- add_column(titanic_test,Survived = Survived_pred,.before = "Pclass")
+result <- add_column(titanic_test,
+                     Survived = as.numeric(as.character(Survived_pred)),
+                     .before = "Pclass")
 head(result)
+# Proportion of Survival of all Passengers
+full_data <- bind_rows(titanic_train,result)
+nrow(full_data)
+mean(full_data$Survived == 1)*100
